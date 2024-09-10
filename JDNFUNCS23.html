@@ -1,0 +1,724 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Bruce E. Högman bruce.hogman@gmail.com">
+   <meta name="GENERATOR" content="Mozilla/4.61 [en] (Win98; I) [Netscape]">
+   <meta name="Description" content="JavaScript functions to do calendar date manipulations.">
+   <meta name="KeyWords" content="JavaScript,calendar,date,Year 2000,calendar date,date functions,source code">
+   <title>Calendar Date Functions</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#FF0000" vlink="#800080" alink="#0000FF">
+<script LANGUAGE="JavaScript"><!--
+var isopen=false;
+var newwin;
+var start1tag="<head><title>";
+var start2tag="</title></head><body><center>"
+var what="<font size=+1 color=brown>"
+var childwin="<FORM NAME=\"JDNCHILD\"><INPUT TYPE=\"button\" NAME=\"JDNCBUT\" VALUE=\" OK \" OnClick=window.close()></FORM>";
+
+function openwin(title,text)
+{newwin = window.open("","", "height=75,width=500,scrollbars=no,resizable=no");
+ newwin.document.write(start1tag+title+start2tag)
+ newwin.document.write(text)
+ newwin.document.write(childwin)
+ newwin.document.close()
+ isopen=true;
+}
+
+function closewin()
+{ if (isopen==true)  { newwin.close();  isopen=false;} }
+
+function jd2cum(ijd)
+{ iw = (ijd * 4) - 7468865;
+  iw = (iw - (iw % 146097))/146097;
+  ix = (iw - (iw % 4)) / 4;
+  ia = (iw + ijd +1) - ix;
+  ib = ia + 1524;
+  ic = ((ib * 10) - 1221) * 2;
+  ic = (ic - (ic % 5)) / 5;
+  ic = (ic - (ic % 1461)) / 1461;
+  id = ic * 1461;
+  id = (id - (id % 4)) / 4;
+  ig = ib - id;
+  ie = (ig * 10000);
+  ie = (ie - (ie % 306001)) / 306001;
+  idd2 = ie * 306001;
+  idd2 = (idd2 - (idd2 % 10000)) / 10000;
+  idd = ig - idd2;
+  idj = ie;
+  if (ie > 13) { ie -= 13; iyyyy = ic - 4715; }
+  else         { ie--;      iyyyy = ic - 4716; }
+
+  // imj is number of days to 3/1 in adjusted month table
+  imj = 61;
+  if (idj > 13)
+  { imj = 397;
+    idyj2 = (idj - 1) * 306001;
+    idyj2 = (idyj2 - (idyj2 % 10000)) / 10000;
+    idyj = idd + idyj2 - imj;
+  }
+  else
+  {
+    { irem = iyyyy % 4;
+      if (irem == 0 ) ileap = 1;
+      else ileap = 0;
+      idyj2 = idj * 306001;
+      idyj2 = (idyj2 - (idyj2 % 10000)) / 10000;
+      idyj = idd + idyj2 - imj - 1 - (1 * (1-ileap));
+    }
+  }
+  idate = (iyyyy * 1000) + idyj;
+  return idate;
+}
+function jdjday(yyyymmdd)
+{ ymd = yyyymmdd;
+  // get year only
+  var iyear = ymd - (ymd % 10000);
+  // get month only
+  var imonth = (ymd - iyear);
+  imonth = (imonth - (imonth % 100)) / 100;
+  iyear = iyear / 10000;
+  var iday = ymd % 100;
+  if (imonth < 3) { imonth += 12; iyear --;}
+  imonth++;
+  var ia = (iyear - (iyear % 100)) / 100;
+  var ib = (ia - (ia % 4)) / 4;
+  var ic = 2 - ia + ib;
+  var ie = (iyear + 4716) * 1461;
+  ie = (ie - (ie % 4)) / 4;
+  var ig = imonth * 306001;
+  ig = (ig - (ig % 10000)) / 10000;
+  var ijd = ic + iday + ie + ig - 1524;
+  return ijd;
+}
+function jd2ymd(jdn)
+{ var ijd = jdn;
+  var iw  = ijd * 4;
+  iw -= 7468865;
+  iw = (iw - (iw % 146097))/ 146097;
+  var ix = (iw - (iw % 4)) / 4;
+  var ia = (iw + ijd +1) - ix;
+  var ib = ia + 1524;
+  var ic =( (ib * 10) - 1221) * 2;
+  ic = (ic - (ic % 5)) / 5;
+  ic = (ic - (ic % 1461)) / 1461;
+  var id = (ic * 1461);
+  id = (id - (id % 4)) / 4;
+  var ig = ib - id;
+  var ie = (ig * 10000);
+  ie = (ie - (ie % 306001)) / 306001;
+  var idd2 = (ie * 306001);
+  idd2 = (idd2 - (idd2 % 10000)) / 10000;
+  var idd = ig - idd2;
+  // ie is month of year
+  var iyyyy = 0;
+  if (ie > 13)
+  { ie -= 13;
+    iyyyy = ic - 4715;
+  }
+  else
+  { ie--;
+    iyyyy = ic - 4716;
+  }
+  iyyyy = (iyyyy * 100) + ie;
+  iyyyy = (iyyyy * 100) + idd;
+  return iyyyy;
+}
+function MakeArray(n)
+{ this.length = 12;
+  for (var i=1;i<=n;i++)
+  { this[i] = 0;
+  }
+  return this;
+}
+function jdcymd(icum)
+{ montab = new MakeArray(12);
+  montab[1]=31; montab[2]=59; montab[3]=90; montab[4]=120; montab[5]=151; montab[6]=181;
+  montab[7]=212; montab[8]=243; montab[9]=273; montab[10]=304; montab[11]=334;
+  montab[12]=365;
+  iyear = (icum - (icum % 1000)) / 1000;
+  odate = iyear;
+  iddd  = icum % 1000;
+  if (iyear % 4 == 0)
+  { montab[1]=31; montab[2]=60; montab[3]=91; montab[4]=121; montab[5]=152; montab[6]=182;
+    montab[7]=213; montab[8]=244; montab[9]=274; montab[10]=305; montab[11]=335;
+    montab[12]=366;
+  }
+  sx=1;
+  // while day of year greater than last day of month day of year
+  // 1-31: sx = 1 after loop; 32-59: sx=2 after loop
+  bcontinue=1;
+  while (iddd > montab[sx]) sx++;
+  odate = (odate * 100) + sx;   // add month number
+  iddd -= montab[--sx];         // subtract day of prev month
+  odate = (odate * 100) + iddd; // add day of month to date   */
+  return odate;
+}
+
+function ValidateCUM(icum)
+{ var bvalid = "1";
+  idate = parseInt(icum);
+  iyear = (idate - (idate % 1000)) / 1000;
+  iddd  = idate % 1000;
+  irem = iyear % 4;
+  if (irem > 0) imax=366; else imax=365;
+  if (iddd > imax) bvalid="0";
+  document.FMJDNfrCal.procjdnfrval.value=bvalid;
+}
+
+function ValidateYMD(ymd)
+{ var bvalid="1";
+//alert("validate="+ymd);
+//if (ymd.length < 8)
+//{ alert("Invalid calendar date input: " + ymd);
+//  bvalid="0";
+//}
+//alert("valid length"+ymd.length);
+  idate = parseInt(ymd);
+//alert("idate="+idate);
+  iyear = (idate - (idate % 10000));
+  imonth = idate - iyear;
+  imonth = (imonth - (imonth % 100)) / 100;
+  iyear = iyear / 10000;
+  iday = idate % 100;
+//alert("yr="+iyear+" mo="+imonth+" da="+iday);
+  irem = iyear % 4;
+  if (irem > 0) ileap=0;
+  else ileap=1;
+  if (!(0 < imonth && imonth < 13))
+  { bvalid="0"}
+  if (!(0 < iday && iday < 32))
+  { bvalid="0"}
+  else
+  { if (imonth==1||imonth==3||imonth==5||imonth==7||imonth==8||imonth==10||imonth==12)
+    { imaxdays = 31}
+    else
+    { imaxdays = 30}
+    if (imonth==2 && ileap==1) {imaxdays=29}
+    if (imonth==2 && ileap==0) {imaxdays=28}
+    if (iday > imaxdays) {bvalid=0}
+  }
+  document.FMJDNfrCal.procjdnfrval.value=bvalid;
+}
+function ValidateJDN(jdn)
+{ var bvalid="1";
+  if (jdn.length < 4)
+  { alert("Invalid Julian Day Number input: " + jdn);
+    bvalid="0";
+  }
+  document.FMJDNfrCal.procjdnfrval.value=bvalid;
+}
+//--></script>
+<a NAME="Selector"></a>
+<p><b>Calendar Functions based on Julian Day Number Algorithm by Bruce
+E. H&ouml;gman, </b><i><a href="mailto:bruce.hogman@gmail.com">bruce.hogman@gmail.com</a></i>
+<br>Read <a href="#JDNDescription">Overview</a> for a description of these
+functions. Read <a href="#JDNFunctions">Functions</a> for a detailed description
+of each function.
+<br>&nbsp;
+<table CELLSPACING=0 CELLPADDING=0 BGCOLOR="#9FF9FD" >
+<caption><b><i><font color="#FF0000">Select function to perform</font></i></b></caption>
+
+<tr>
+<td BGCOLOR="#9FF9FD"><b><i><font color="#FF0000">&nbsp; Return Data Item</font></i></b></td>
+
+<td BGCOLOR="#FFFF80"><b><i><font color="#FF0000">&nbsp; Input Type</font></i></b></td>
+
+<td BGCOLOR="#FFFF80"><b><i><font color="#FF0000">&nbsp; Input Format</font></i></b></td>
+</tr>
+
+<tr>
+<td BGCOLOR="#FFFF80">&nbsp; <a href="#JDNfrCal">Julian Day Number</a></td>
+
+<td>&nbsp; Calendar Date</td>
+
+<td>&nbsp; yyyymmdd</td>
+</tr>
+
+<tr>
+<td BGCOLOR="#FFFF80">&nbsp; <a href="#JDNfrJul">Julian Day Number</a></td>
+
+<td>&nbsp; julian date</td>
+
+<td>&nbsp; yyyyddd</td>
+</tr>
+
+<tr>
+<td BGCOLOR="#FFFF80">&nbsp; <a href="#CalfrJul">Calendar Date</a></td>
+
+<td>&nbsp; julian date</td>
+
+<td>&nbsp; yyyyddd</td>
+</tr>
+
+<tr>
+<td BGCOLOR="#FFFF80">&nbsp; <a href="#CalfrJDN">Calendar Date</a></td>
+
+<td>&nbsp; Julian Day Number</td>
+
+<td>&nbsp; nnnnnnn</td>
+</tr>
+
+<tr>
+<td BGCOLOR="#FFFF80">&nbsp; <a href="#julfrCal">julian date</a></td>
+
+<td>&nbsp; Calendar Date</td>
+
+<td>&nbsp; yyyymmdd</td>
+</tr>
+
+<tr>
+<td BGCOLOR="#FFFF80">&nbsp; <a href="#julfrJDN">julian date</a></td>
+
+<td>&nbsp; Julian Day Number</td>
+
+<td>&nbsp; nnnnnnn</td>
+</tr>
+
+<tr>
+<td BGCOLOR="#FFFF80">&nbsp; <a href="#Diffdates">Difference in days</a></td>
+
+<td>&nbsp; Calendar Date1, Calendar Date 2&nbsp;</td>
+
+<td>&nbsp; yyyymmdd</td>
+</tr>
+
+<tr>
+<td BGCOLOR="#FFFF80">&nbsp; <a href="#weekday">Weekday</a></td>
+
+<td>&nbsp; Calendar Date</td>
+
+<td>&nbsp; yyyymmdd</td>
+</tr>
+
+<tr>
+<td BGCOLOR="#FFFF80">&nbsp; <a href="#Busday">Business
+Day Date</a></td>
+
+<td>&nbsp; Calendar Date</td>
+
+<td>&nbsp; yyyymmdd</td>
+</tr>
+
+<tr>
+<td BGCOLOR="#FFFF80">&nbsp; <a href="#Caloffset">Date +/- number of days</a></td>
+
+<td>&nbsp; Calendar Date, number of days</td>
+
+<td>&nbsp; yyyymmdd +/-nnnn&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<p>
+<hr SIZE=3 WIDTH="100%">
+<p><b><i><font color="#FF0000"><font size=+1>Enter required data in entry
+area, then select button to display value. Close popup window to return
+to data entry.</font></font></i></b>
+<br>&nbsp;
+<table WIDTH="85%" >
+<tr VALIGN=BOTTOM BGCOLOR="#FFFF80">
+<td COLSPAN="6"><a NAME="JDNfrCal"></a><b>Julian Day Number</b> given Calendar
+Date in yyyymmdd format. <i><font color="#800000">If the calendar date
+has leading zeros in the year, omit the leading zeros.</font></i></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>
+<div align=right><form NAME="FMJDNfrCal">Input Calendar Date:<input TYPE="hidden" NAME="procjdnfrval" VALUE="1"></div>
+</td>
+
+<td><input TYPE="text" Name="caldate" VALUE="" SIZE=8></td>
+
+<td>
+<center><input TYPE="button" NAME="procjdnfrcal" VALUE="Display JDN" OnClick="ValidateYMD(document.FMJDNfrCal.caldate.value);
+if (document.FMJDNfrCal.procjdnfrval.value=='1')
+{jdn=jdjday(document.FMJDNfrCal.caldate.value);
+openwin('Julian Day Number for '+document.FMJDNfrCal.caldate.value,jdn);}
+else {alert('Invalid date value, input date format:  yyyymmdd')}"></center>
+</td>
+
+<td><a href="#Selector">Back to Table</a></form></td>
+</tr>
+
+<tr VALIGN=BOTTOM BGCOLOR="#FFFF80">
+<td COLSPAN="6"><a NAME="JDNfrJul"></a><b>Julian Day Number</b> given julian
+date in yyyyddd format (year and day of year). <i>Omit leading zeros in
+year.</i></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>
+<div align=right><form NAME="FMJDNfrCum">Input julian date:</div>
+</td>
+
+<td><input TYPE="text" Name="cumdate" VALUE="" SIZE=8></td>
+
+<td>
+<center><input TYPE="button" NAME="procjdnfrcum" VALUE="Display JDN" OnClick="ValidateCUM(document.FMJDNfrCum.cumdate.value);
+if (document.FMJDNfrCal.procjdnfrval.value=='1')
+{cal=jdcymd(document.FMJDNfrCum.cumdate.value);
+jdn=jdjday(cal);
+openwin('Julian Day Number for julian date '+document.FMJDNfrCum.cumdate.value,jdn);}
+else {alert('Invalid julian date value, input date format:  yyyyddd')}"></center>
+</td>
+
+<td><a href="#Selector">Back to Table</a></form></td>
+</tr>
+
+<tr VALIGN=BOTTOM BGCOLOR="#FFFF80">
+<td COLSPAN="6"><a NAME="CalfrJul"></a><b>Calendar Date</b> given julian
+date in yyyyddd format (year and day of year). <i>Omit leading zeros in
+year.</i></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>
+<div align=right><form NAME="FMCalfrCum">Input julian date:</div>
+</td>
+
+<td><input TYPE="text" Name="cumdatej" VALUE="" SIZE=8></td>
+
+<td>
+<center><input TYPE="button" NAME="proccalfrcum" VALUE="Display Date" OnClick="ValidateCUM(document.FMCalfrCum.cumdatej.value);
+if (document.FMJDNfrCal.procjdnfrval.value=='1')
+{cal=jdcymd(document.FMCalfrCum.cumdatej.value);
+openwin('Calendar Date for julian date '+document.FMCalfrCum.cumdatej.value,cal);}
+else {alert('Invalid julian date value, input date format:  yyyydddd')}"></center>
+</td>
+
+<td><a href="#Selector">Back to Table</a></form></td>
+</tr>
+
+<tr VALIGN=BOTTOM BGCOLOR="#FFFF80">
+<td COLSPAN="6"><a NAME="CalfrJDN"></a><b>Calendar Date</b> given Julian
+Day Number</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>
+<div align=right><form NAME="FMCalfrJDN">Input Julian Day Number:</div>
+</td>
+
+<td><input TYPE="text" Name="jdnnbr" VALUE="" SIZE=8></td>
+
+<td>
+<center><input TYPE="button" NAME="procjd2ymd" VALUE="Display Date"  OnClick="ValidateJDN(document.FMCalfrJDN.jdnnbr.value);
+if (document.FMJDNfrCal.procjdnfrval.value=='1')
+{iymd=jd2ymd(parseInt(document.FMCalfrJDN.jdnnbr.value))
+openwin('Calendar Date for '+document.FMCalfrJDN.jdnnbr.value,iymd);
+}
+else {alert('Input Julian Day Format:  nnnnnnn')}"></center>
+</td>
+
+<td><a href="#Selector">Back to Table</a></form></td>
+</tr>
+
+<tr VALIGN=BOTTOM BGCOLOR="#FFFF80">
+<td COLSPAN="6"><a NAME="julfrCal"></a><b>julian date</b> given Calendar
+Date</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>
+<div align=right><form NAME="FMJulfrCal">Input Calendar Date:</div>
+</td>
+
+<td><input TYPE="text" Name="caldatej" VALUE="" SIZE=8></td>
+
+<td>
+<center><input TYPE="button" NAME="procjulymd" VALUE="Display Date"  OnClick="ValidateYMD(document.FMJulfrCal.caldatej.value);
+if (document.FMJDNfrCal.procjdnfrval.value=='1')
+{jdn=jdjday(document.FMJulfrCal.caldatej.value);
+ijul=jd2cum(jdn);
+openwin('julian date for Calendar Date '+document.FMJulfrCal.caldatej.value,ijul);
+}
+else {alert('Invalid date value, input date format:  yyyymmdd')}"></center>
+</td>
+
+<td><a href="#Selector">Back to Table</a></form></td>
+</tr>
+
+<tr VALIGN=BOTTOM BGCOLOR="#FFFF80">
+<td COLSPAN="6"><a NAME="julfrJDN"></a><b>julian date</b> given Julian
+Day Number</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>
+<div align=right><form NAME="FMJulfrJDN">Input Julian Day Number:</div>
+</td>
+
+<td><input TYPE="text" Name="jdnnbrj" VALUE="" SIZE=8></td>
+
+<td>
+<center><input TYPE="button" NAME="procjd2ymx" VALUE="Display Date"  OnClick="ValidateJDN(document.FMJulfrJDN.jdnnbrj.value);
+if (document.FMJDNfrCal.procjdnfrval.value=='1')
+{ijul=jd2cum(parseInt(document.FMJulfrJDN.jdnnbrj.value))
+openwin('julian date for Julian Day Number '+document.FMJulfrJDN.jdnnbrj.value,ijul);
+}
+else {alert('Input Julian Day Format:  nnnnnnn')}"></center>
+</td>
+
+<td><a href="#Selector">Back to Table</a></form></td>
+</tr>
+
+<tr VALIGN=BOTTOM BGCOLOR="#FFFF80">
+<td COLSPAN="6"><a NAME="weekday"></a><b>Weekday</b> given calendar date.
+Omit leading zeros in year.</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>
+<div align=right><form NAME="FMWKDfrCal">Input Calendar Date:</div>
+</td>
+
+<td><input TYPE="text" Name="caldatew" VALUE="" SIZE=8></td>
+
+<td>
+<center><input TYPE="button" NAME="procwkdfrcal" VALUE="Display Weekday" OnClick="ValidateYMD(document.FMWKDfrCal.caldatew.value);
+if (document.FMJDNfrCal.procjdnfrval.value=='1')
+{wk=jdjday(document.FMWKDfrCal.caldatew.value);
+  wk = (wk +1) % 7;
+  if (wk == 0) wkd = 'Sunday';
+  if (wk == 1) wkd = 'Monday';
+  if (wk == 2) wkd = 'Tuesday';
+  if (wk == 3) wkd = 'Wednesday';
+  if (wk == 4) wkd = 'Thursday';
+  if (wk == 5) wkd = 'Friday';
+  if (wk == 6) wkd = 'Saturday';
+  openwin('Weekday for '+document.FMWKDfrCal.caldatew.value,wk+' is '+wkd);
+}
+else {alert('Input date format:  yyyymmdd')}"></center>
+</td>
+
+<td><a href="#Selector">Back to Table</a></form></td>
+</tr>
+
+<tr VALIGN=BOTTOM BGCOLOR="#FFFF80">
+<td COLSPAN="6"><a NAME="Diffdates"></a><b>Difference in days</b> between
+two calendar dates. <i>Omit leading zeros in year.</i></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>
+<div align=right><form NAME="FMDIFfrCal">Input Calendar Date 1:</div>
+</td>
+
+<td><input TYPE="text" Name="caldate1" VALUE="" SIZE=8></td>
+
+<td></td>
+
+<td></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>
+<div align=right>Calendar Date 2:</div>
+</td>
+
+<td><input TYPE="text" Name="caldate2" VALUE="" SIZE=8></td>
+
+<td>
+<center><input TYPE="button" NAME="procdiffrcal" VALUE="Display Difference" OnClick="ValidateYMD(document.FMDIFfrCal.caldate1.value);
+if (document.FMJDNfrCal.procjdnfrval.value=='1')
+{ValidateYMD(document.FMDIFfrCal.caldate2.value);
+ idate1=jdjday(parseInt(document.FMDIFfrCal.caldate1.value));
+ if (document.FMJDNfrCal.procjdnfrval.value=='1')
+ {idate2=jdjday(parseInt(document.FMDIFfrCal.caldate2.value));
+  idiff=idate1>idate2?idate1-idate2:idate2-idate1;
+  openwin('Difference between '+document.FMDIFfrCal.caldate1.value+' and '+document.FMDIFfrCal.caldate2.value,'Difference is '+idiff+' days');
+ }
+}
+else {alert('Input date format:  yyyymmdd')}"></center>
+</td>
+
+<td><a href="#Selector">Back to Table</a></form></td>
+</tr>
+
+<tr VALIGN=BOTTOM BGCOLOR="#FFFF80">
+<td COLSPAN="6"><a NAME="BusDay"></a><b>Business day</b> preceding date.
+<i>Omit
+leading zeros in year.</i></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>
+<div align=right><form NAME="FMBUSfrCal">Input Calendar Date:</div>
+</td>
+
+<td><input TYPE="text" Name="caldatb" VALUE="" SIZE=8></td>
+
+<td>
+<center><input TYPE="button" NAME="procbusfrcal" VALUE="Find Date" OnClick="ValidateYMD(document.FMBUSfrCal.caldatb.value);
+if (document.FMJDNfrCal.procjdnfrval.value=='1')
+{jdn=jdjday(parseInt(document.FMBUSfrCal.caldatb.value));
+iwk = (jdn + 1) % 7;
+if (0 < iwk && iwk < 6) ioff = 0;
+else if (iwk==0) ioff=-2;
+else if (iwk==6) ioff=-1;
+jdn += ioff;
+ical=jd2ymd(jdn);
+openwin('Date for date '+document.FMBUSfrCal.caldatb.value,ical);
+}
+else {alert('Input date format:  yyyymmdd')}"></center>
+</td>
+
+<td><a href="#Selector">Back to Table</a></form></td>
+</tr>
+
+<tr VALIGN=BOTTOM BGCOLOR="#FFFF80">
+<td COLSPAN="6"><a NAME="Caloffset"></a>Return calendar date given calendar
+date +/- number of days. <i>Omit leading zeros in year.</i></td>
+</tr>
+
+<tr>
+<td>
+<div align=right><form NAME="FMOFFfrCal">Input Calendar Date:</div>
+</td>
+
+<td><input TYPE="text" Name="caldatd" VALUE="" SIZE=8></td>
+
+<td></td>
+
+<td></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>
+<div align=right>Signed offset days:</div>
+</td>
+
+<td><input TYPE="text" Name="nrdays" VALUE="" size=6></td>
+
+<td>
+<center><input TYPE="button" NAME="procjdnfrcax" VALUE="Calculate Date" OnClick="ValidateYMD(document.FMOFFfrCal.caldatd.value);
+if (document.FMJDNfrCal.procjdnfrval.value=='1')
+{jdn=jdjday(parseInt(document.FMOFFfrCal.caldatd.value));
+ioff=parseInt(document.FMOFFfrCal.nrdays.value);
+jdn+=ioff;
+ical=jd2ymd(jdn);
+openwin('Date for date '+document.FMOFFfrCal.caldatd.value+'+'+document.FMOFFfrCal.nrdays.value,ical);
+}
+else {alert('Input date format:  yyyymmdd')}"></center>
+</td>
+
+<td><a href="#Selector">Back to Table</a></form></td>
+</tr>
+</table>
+
+<p>
+<hr SIZE=3 WIDTH="100%">
+<br><a NAME="JDNFunctions"></a><b><i><font size=+1>Function Descriptions</font></i></b>
+<p><b>Julian Day Number:&nbsp;</b> Returns the JDN for the given calendar
+date. You enter the calendar date in the format yyyymmdd, where "yyyy"
+is the full 4-digit year, "mm" is the month of the year with two digits,
+and "dd" is the day of the month. The other method of specifying input
+is to provide the julian date, or year and day of year (1-365 or 366).
+<br><a href="#Selector">Back to Table</a>
+<a NAME="CalDateTxt"></a>
+<p><b>Calendar Date:</b>&nbsp; Returns the calendar date for the given
+Julian Day Number (JDN) or julian date. The JDN is a 7 digit number. The
+julian date is the year and day of year. The date returned is yyyymmdd,
+year, month, and day of month.
+<br><a href="#Selector">Back to Table</a>
+<a NAME="juliandatetxt"></a>
+<p><b>julian date:</b>&nbsp; Returns the julian date, or year and day of
+year for the given calendar date or Julian Day Number (JDN).
+<br><a href="#Selector">Back to Table</a>
+<a NAME="weekdaytxt"></a>
+<p><b>Weekday:</b> Returns the day of week, 0=Sunday through 6=Saturday
+with the name of the day of week. This is easy to calculate from the Julian
+Day Number, as the day of the week is simply the remainder of dividing
+7 into (JDN+1). Input any calendar date, and you can find out what day
+of the week it is. For example, New Year's Day 2000 is a Saturday.
+<br><a href="#Selector">Back to Table</a>
+<a NAME="differencetxt"></a>
+<p><b>Difference:</b> Returns the difference in days between any two calendar
+dates. Enter two calendar dates using yyyymmdd format and then select the
+button to show the difference in days. This way, you can calculate how
+long in days it is to a special event, or how many days it has been from
+one. One currently popular use of this function is to determine how many
+days are remaining between today and 2000-01-01.
+<br><a href="#Selector">Back to Table</a>
+<a NAME="businessdaytxt"></a>
+<p><b>Business Day:&nbsp;</b> Returns the date of the last business day
+(weekday) preceding the given input date. This is simply the last Friday
+preceding the date if that date is on the weekend, or the date itself if
+it is a weekday. This is useful for such things as last business day preceding
+the 15th or end of the month, for example, for business use. It converts
+the input date to JDN, gets the day of week, then may subtract a day or
+two to get a new JDN and then converts back to return the calendar date.
+<br><a href="#Selector">Back to Table</a>
+<a NAME="dateoffsettxt"></a>
+<p><b>Date Offset:&nbsp; </b>Returns the calendar date that is the input
+date +/- a number of days.
+<br><a href="#Selector">Back to Table</a>
+<a NAME="futureenhtxt"></a>
+<p><b>Future:&nbsp;</b> Plans include adding the Federal Holiday calendar
+to this page to return significant dates. The Monday Holiday law certainly
+makes this easier to do.
+<br><a href="#Selector">Back to Table</a>
+<p>
+<hr>
+<p><a NAME="JDNDescription"></a><b><i><font size=+1>Julian Day Number Functions</font></i></b>
+<p>In researching existing calendar date subroutines and functions, I discovered
+most suffer from a programmer's point of view as to how to manipulate dates.
+They approach date manipulation using complicated code. Most programmers
+don't know about mathematical algorithms for calculating calendar dates
+for long period events such as the next return of Halley's Comet. These
+algorithms are familiar to astronomers.
+<p>Josephus Justus Scaliger created the concept of Julian Day Number (named
+in honor of his father Julius) because he was a historian interested in
+resolving historical dates based on different calendars. He brought together
+several calendars including the Gregorian calendar in 1583 and chose a
+base date of 4713 BC January 1 from which to number all days. He chose
+that date as one common to the then common calendars he wanted to reconcile.
+He also devised an algorithm using integer calculations only to convert
+a date in the modern Gregorian calendar to a Julian Day Number and back
+again.
+<p>Using Scaliger's algorithms, you can calculate the number of days between
+any two calendar dates by converting each date into its unique Julian Day
+Number and then finding the difference in days between them. Note that
+the Julian Day Number is not related to the "julian date" in which the
+year and day of year is used. In the julian date format, the day of year
+goes from 1 to 365 or 366. The Julian Day Number (JDN) for 2000-01-01 (January
+1st 2000) is 2451545.
+<p>Astronomers also use the Modified Julian Day Number that has a base
+date of 1858-11-17 or Julian Day Number 2400001. The IBM Language Environment
+(LE) 370 system (LE370 MVS) of date functions uses a JDN of 1721426 for
+base date of 0001-01-01 (January 1st 0001). To convert from JDN to the
+base day number used by the LE370 functions, add or subtract 1721426. In
+algorithms for JDN, the day of week number 0 is Sunday (the remainder when
+the JDN for the date is divided by 7). In the IBM LE370 functions, the
+day of week that is 0 is Monday. On IBM MVS mainframe systems, the system
+date value is stored internally in julian date format. A recent change
+in the operating system added century digits to the julian date, where
+the century digits start at 00 for years prefixed by 19 and 01 for years
+prefixed by 20.
+<p><b>Caveats:</b>&nbsp; The modern Gregorian calendar does not cover all
+dates in history. It is wrong to use the functions to attempt to find out
+the day of week for events prior to the 16th century. These functions are
+meant for modern use with modern dates, to help you with today's problems.
+Note that astronomers start the day at noon instead of midnight, since
+their workday is at night and they don't like to split a workday into two
+dates. The algorithms given here ignore the start time offset. Assume that
+the date returned is a midnight of the day instead of 12 hours later (at
+noon that same day). The source code for the programs in C and COBOL are
+available by email to the author.
+<br><a href="#Selector">Back to Table</a>
+<p><b>Applications: </b>You can use the functions to convert an elapsed
+time value such as that returned from a TCP/IP Network Time Protocol (NTP)
+server into a calendar date plus time of day. Take the whole number of
+seconds. Divide by 86400, or the number of seconds in one day. The quotient
+is the full number of days. Add 2415021, the Julian Day Number for 1900-01-01
+which is the base date for NTP time standard, to the quotient. This is
+the Julian Day Number for the date that is represented by the time standard
+value. Convert the resulting number from JDN to calendar date. Then, take
+the remainder of the first division above and convert that to a 24 hour
+time of day. Now you have both calendar date and time of day from the NTP
+server time.
+<br><a href="#Selector">Back to Table</a>
+</body>
+</html>
